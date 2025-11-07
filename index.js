@@ -1,7 +1,7 @@
 
 const express = require('express');
 const axios = require('axios');
-const { Server } = require("socket.io");
+const http = require("http");
 const bodyParser = require('body-parser');
 require('dotenv').config();
 const app = express();
@@ -15,10 +15,10 @@ const cors = require("cors");
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://pearllife.netlify.app/"
+  "https://pearllife.netlify.app"
 
-  
 ];
+const server = http.createServer(app);
 
 const corsOptions = {
   origin: function(origin, callback) {
