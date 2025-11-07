@@ -13,6 +13,7 @@ const ENTITY_ID = process.env.OPP_ENTITY_ID;
 const AUTH_TOKEN = process.env.OPP_TOKEN ;
 const cors = require("cors");
 
+
 const allowedOrigins = [
   "http://localhost:3000",
   "https://pearllife.netlify.app"
@@ -68,6 +69,14 @@ app.post('/payment-status', async (req, res) => {
   } catch (err) {
     res.status(err.response?.status || 500).json({ error: err.response?.data || err.message });
   }
+});
+app.post("/receive-data", (req, res) => {
+  tempUserData = req.body;
+  res.json({ message: "Data received successfully", data: tempUserData });
+});
+
+app.get("/get-user-data", (req, res) => {
+  res.json(tempUserData);
 });
 
 const PORT = process.env.PORT || 5000;
