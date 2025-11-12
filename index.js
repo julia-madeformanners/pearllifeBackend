@@ -38,7 +38,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.post('/create-checkout', async (req, res) => {
-  const { amount = '1', currency = 'AED', paymentType = 'DB' } = req.body;
+  const { amount = '7217.73', currency = 'AED', paymentType = 'DB' } = req.body;
   const params = new URLSearchParams();
   params.append('entityId', ENTITY_ID);
   params.append('amount', amount);
