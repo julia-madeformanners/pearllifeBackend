@@ -92,11 +92,11 @@ app.post("/payment-notification", async (req, res) => {
         console.log('✅ SMTP server is ready to send messages');
       }
     });
-   
+
     const mailOptions = {
-      from: `"Website Payment Notification`,
+      from: `"Website Payment Notification" <hello@pearllifefuneralservices.com>`,
       to: user.email,
-      cc:"hello@pearllifefuneralservices.com",
+      cc: "hello@pearllifefuneralservices.com",
       subject: `🧾 Payment Invoice - ${user.name}`,
       html: `
         <div style="font-family:Arial,sans-serif;padding:20px;background:#f4f4f4;">
