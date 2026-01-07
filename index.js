@@ -76,9 +76,8 @@ app.post("/payment-notification", async (req, res) => {
 
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp.dreamhost.com",
-      port: 465,
-      secure: true,
+      host: "gmail",
+     
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -95,7 +94,7 @@ app.post("/payment-notification", async (req, res) => {
 
     const mailOptions = {
       from: `"Website Payment Notification`,
-      to: `${user.email}, hello@pearllifefuneralservices.com`,
+      to: `${user.email}, meeryawad19@gmail.com`,
       subject: `🧾 Payment Invoice - ${user.name}`,
       html: `
         <div style="font-family:Arial,sans-serif;padding:20px;background:#f4f4f4;">
