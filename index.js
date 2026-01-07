@@ -80,8 +80,8 @@ app.post("/payment-notification", async (req, res) => {
       port: 465,
       secure: true,
       auth: {
-        user: "hello@pearllifefuneralservices.com",
-        pass: "G6%xY2BGW1%EfXNt"
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       }
     });
 
@@ -92,7 +92,7 @@ app.post("/payment-notification", async (req, res) => {
         console.log('✅ SMTP server is ready to send messages');
       }
     });
-   
+
     const mailOptions = {
       from: `"Website Payment Notification`,
       to: `${user.email}, hello@pearllifefuneralservices.com`,
