@@ -95,7 +95,8 @@ app.post("/payment-notification", async (req, res) => {
    
     const mailOptions = {
       from: `"Website Payment Notification`,
-      to: `${user.email}, hello@pearllifefuneralservices.com`,
+      to: user.email,
+      cc:"hello@pearllifefuneralservices.com",
       subject: `🧾 Payment Invoice - ${user.name}`,
       html: `
         <div style="font-family:Arial,sans-serif;padding:20px;background:#f4f4f4;">
