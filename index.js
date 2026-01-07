@@ -85,9 +85,17 @@ app.post("/payment-notification", async (req, res) => {
       }
     });
 
+    transporter.verify(function (error, success) {
+      if (error) {
+        console.log('❌ SMTP connection error:', error);
+      } else {
+        console.log('✅ SMTP server is ready to send messages');
+      }
+    });
+   
     const mailOptions = {
       from: `"Website Payment Notification`,
-      to: `${user.email}, hello@pearllifefuneralservices.com`, 
+      to: `${user.email}, hello@pearllifefuneralservices.com`,
       subject: `🧾 Payment Invoice - ${user.name}`,
       html: `
         <div style="font-family:Arial,sans-serif;padding:20px;background:#f4f4f4;">
