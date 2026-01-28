@@ -3,9 +3,16 @@ const express = require('express');
 const axios = require('axios');
 const http = require("http");
 const nodemailer = require("nodemailer");
+const { MailtrapTransport } = require("mailtrap");
+const mongoose = require("mongoose");
+const { User } = require('./data');
+const router = express.Router();
+
 const bodyParser = require('body-parser');
 require('dotenv').config();
 const app = express();
+const server = http.createServer(app);
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -13,14 +20,11 @@ const BASE_URL = 'https://eu-prod.oppwa.com/';
 const ENTITY_ID = process.env.OPP_ENTITY_ID;
 const AUTH_TOKEN = process.env.OPP_TOKEN;
 
-
 const cors = require("cors");
 const allowedOrigins = [
   "http://localhost:3000",
   "https://pearllife.netlify.app",
 ];
-
-const server = http.createServer(app);
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -37,7 +41,41 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// mongoose.connect(process.env.MONGO_URI)
+//   .then(async () => {
+
+//     console.log("Connected to MongoDB");
+//     // const result = await User.deleteMany({});
+//     // console.log(`Deleted ${result.deletedCount} users`);
+
+//   })
+//   .catch((err) => console.error("MongoDB connection failed", err));
+// <>
+
+router.get('/users', async (req, res) => {
+  try {
+    const users = await User.find();
+
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users', error });
+  }
+});
+router.post('/users', async (req, res) => {
+  try {
+
+    const user = new User(req.body);
+    const savedUser = await user.save();
+    res.status(201).json(savedUser);
+  } catch (error) {
+    res.status(400).json({ message: 'Error saving users', error });
+  }
+});
+// </>
+
+
 app.post('/create-checkout', async (req, res) => {
+
   const { amount, currency, paymentType } = req.body;
   const params = new URLSearchParams();
   params.append('entityId', ENTITY_ID);
@@ -71,32 +109,28 @@ app.post('/payment-status', async (req, res) => {
     res.status(err.response?.status || 500).json({ error: err.response?.data || err.message });
   }
 });
+
+const transport = nodemailer.createTransport({
+  host: process.env.MAILTRAP_HOST,
+  port: process.env.MAILTRAP_PORT,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
 app.post("/payment-notification", async (req, res) => {
-  const { user } = req.body;
 
+  const user = req.body;
+ 
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      }
-    });
+    await transport.sendMail({
+      from: `"Pearl Life Cremation" <hello@pearllifefuneralservices.com>`
+      ,
+      to: `${user.email}, hello@pearllifefuneralservices.com`,
 
-    transporter.verify(function (error, success) {
-      if (error) {
-        console.log('❌ SMTP connection error:', error);
-      } else {
-        console.log('✅ SMTP server is ready to send messages');
-      }
-    });
-
-    const mailOptions = {
-      from: `"Website Payment Notification`,
-      to: `${user.email}, meeryawad19@gmail.com`,
       subject: `🧾 Payment Invoice - ${user.name}`,
-      html: `
-        <div style="font-family:Arial,sans-serif;padding:20px;background:#f4f4f4;">
+      html: `<div style="font-family:Arial,sans-serif;padding:20px;background:#f4f4f4;">
           <div style="max-width:600px;margin:auto;background:#fff;padding:25px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
 
             <h2 style="text-align:center;color:#333;margin-bottom:20px;">
@@ -143,21 +177,23 @@ app.post("/payment-notification", async (req, res) => {
             <p style="margin-top:30px;text-align:center;color:#777;font-size:12px;">
               Pearl Life Funeral Services — This is an automated invoice.
             </p>
-
-          </div>
-        </div>
-      `
-    };
-
-    await transporter.sendMail(mailOptions);
+            </div>
+            </div>
+      `,
+      category: "Payment Invoice",
+    });
 
     res.json({ message: "Invoice sent successfully" });
+    console.log('email done')
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to send invoice", error: err.message });
+    console.error("Mailtrap error:", err);
+    res.status(500).json({ message: "Failed to send invoice" });
+    console.log("Failed to send invoice")
   }
 });
+
+
 
 // app.post("/receive-data", (req, res) => {
 //   tempUserData = req.body;
