@@ -11,6 +11,7 @@ const router = express.Router();
 const bodyParser = require('body-parser');
 require('dotenv').config();
 const app = express();
+const { Resend } = require("resend");
 const server = http.createServer(app);
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -19,6 +20,7 @@ app.use(bodyParser.json());
 const BASE_URL = 'https://eu-prod.oppwa.com/';
 const ENTITY_ID = process.env.OPP_ENTITY_ID;
 const AUTH_TOKEN = process.env.OPP_TOKEN;
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const cors = require("cors");
 const allowedOrigins = [
@@ -124,10 +126,10 @@ app.post("/payment-notification", async (req, res) => {
   const user = req.body;
   console.log(user.email)
   try {
-    await transport.sendMail({
-      from: `"Pearl Life Cremation" <${process.env.EMAIL_USER}>`,
-      
-      to: `${user.email}, hello@pearllifefuneralservices.com`,
+    await resend.emails.send({
+      from: "Pearl Life Cremation <onboarding@resend.dev>",
+      to: user.email,
+
 
       subject: `🧾 Payment Invoice - ${user.name}`,
       html: `<div style="font-family:Arial,sans-serif;padding:20px;background:#f4f4f4;">
@@ -182,12 +184,69 @@ app.post("/payment-notification", async (req, res) => {
       `,
       category: "Payment Invoice",
     });
+    await resend.emails.send({
+      from: "Pearl Life Cremation <onboarding@resend.dev>",
+      to: "pearllifecremation@gmail.com",
+      subject: `🧾 Payment Invoice - ${user.name}`,
+      html: `<div style="font-family:Arial,sans-serif;padding:20px;background:#f4f4f4;">
+          <div style="max-width:600px;margin:auto;background:#fff;padding:25px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+
+            <h2 style="text-align:center;color:#333;margin-bottom:20px;">
+              🧾 Payment Invoice<br>
+              <span style="font-size:14px;color:#777;">Pearl Life Funeral Services</span>
+            </h2>
+
+            <p>Dear <b>${user.name}</b>,</p>
+            <p>Thank you for your payment. Below are the details of your transaction:</p>
+
+            <table style="width:100%;border-collapse:collapse;margin-top:15px;">
+              <tr>
+                <td style="padding:8px;border:1px solid #ddd;"><b>Name</b></td>
+                <td style="padding:8px;border:1px solid #ddd;">${user.name}</td>
+              </tr>
+              <tr>
+                <td style="padding:8px;border:1px solid #ddd;"><b>Email</b></td>
+                <td style="padding:8px;border:1px solid #ddd;">${user.email}</td>
+              </tr>
+              <tr>
+                <td style="padding:8px;border:1px solid #ddd;"><b>Phone</b></td>
+                <td style="padding:8px;border:1px solid #ddd;">${user.phone}</td>
+              </tr>
+              <tr>
+                <td style="padding:8px;border:1px solid #ddd;"><b>1 Person Cremation</b></td>
+                <td style="padding:8px;border:1px solid #ddd;">£ ${user.firstOptionValue}</td>
+              </tr>
+              <tr>
+                <td style="padding:8px;border:1px solid #ddd;"><b>2 Person Cremation</b></td>
+                <td style="padding:8px;border:1px solid #ddd;">£ ${user.secondOptionValue}</td>
+              </tr>
+              <tr>
+                <td style="padding:8px;border:1px solid #ddd;"><b>Extra Amount</b></td>
+                <td style="padding:8px;border:1px solid #ddd;">£ ${user.extraValue}</td>
+              </tr>
+              <tr style="background:#fafafa;">
+                <td style="padding:10px;border:1px solid #ddd;"><b>Total Paid</b></td>
+                <td style="padding:10px;border:1px solid #ddd;font-size:18px;"><b>£ ${user.amount}</b></td>
+              </tr>
+            </table>
+
+            <p style="margin-top:20px;">If you have any questions, feel free to contact us.</p>
+
+            <p style="margin-top:30px;text-align:center;color:#777;font-size:12px;">
+              Pearl Life Funeral Services — This is an automated invoice.
+            </p>
+            </div>
+            </div>
+      `,
+      category: "Payment Invoice",
+    });
+
 
     res.json({ message: "Invoice sent successfully" });
     console.log('email done')
 
   } catch (err) {
-    console.error("Mailtrap error:", err);
+    console.error("RESEND ERROR:", err?.response?.data || err);
     res.status(500).json({ message: "Failed to send invoice" });
     console.log("Failed to send invoice")
   }
