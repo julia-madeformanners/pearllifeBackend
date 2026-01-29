@@ -122,11 +122,11 @@ const transport = nodemailer.createTransport({
 app.post("/payment-notification", async (req, res) => {
 
   const user = req.body;
- 
+  console.log(user.email)
   try {
     await transport.sendMail({
-      from: `"Pearl Life Cremation" <hello@pearllifefuneralservices.com>`
-      ,
+      from: `"Pearl Life Cremation" <${process.env.EMAIL_USER}>`,
+      
       to: `${user.email}, hello@pearllifefuneralservices.com`,
 
       subject: `🧾 Payment Invoice - ${user.name}`,
